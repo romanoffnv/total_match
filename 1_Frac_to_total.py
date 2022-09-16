@@ -65,10 +65,13 @@ def main():
 
         return plates
     
-    L_total_plates_ind = transform_plates(L_total_plates) 
+    # L_total_plates_ind = transform_plates(L_total_plates) 
+    # L_total_frac_ind = transform_plates(L_frac_plates)
+    # pprint(L_total_plates_ind)
     
-    pprint(L_total_plates_ind)
-
+    for i in L_frac_plates:
+        print(type(i))
+    
 
     # make df of all cols and plate index
     df = pd.DataFrame(zip(L_frac_group, L_frac_unit, L_frac_plates, L_frac_mols, L_frac_drivers, L_frac_discrepancies, L_frac_notes))
