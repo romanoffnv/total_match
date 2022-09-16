@@ -51,13 +51,17 @@ def main():
     L_frac_drivers = dataFrac(5, 6)
     L_frac_discrepancies = dataFrac(5, 7)
     L_frac_notes = dataFrac(5, 8)
-
+    
+    wb_total.Close(True)
+    wb_frac.Close(True)
+    xl.Quit()
     
     # Turn plates into 123abc type
     def transform_plates(plates):
-        L_regions = [186, 86, 797, '02', '07', 82, 78, 54, 77, 126]
+        L_regions = [186, 86, 797, '02', '07', 82, 78, 54, 77, 126, 188, 88, 174, 74, 158, 196, 156, 76, 1]
+        
         for i in L_regions:
-            plates = [x.removesuffix(str(i)).strip() if x != None else x for x in plates]
+            plates = [x.removesuffix(str(i)).strip() if x != None and len(x) > 7 else x for x in plates]
         plates_numeric = [''.join(re.findall(r'\d+', x)).lower() for x in plates if x != None]
         plates_literal = [''.join(re.findall(r'\D', x)).lower() for x in plates if x != None]
         plates = [str(x) + str(y) for x, y in zip(plates_numeric, plates_literal)]
@@ -65,16 +69,14 @@ def main():
 
         return plates
     
-    # L_total_plates_ind = transform_plates(L_total_plates) 
-    # L_total_frac_ind = transform_plates(L_frac_plates)
-    # pprint(L_total_plates_ind)
+    L_frac_plates = [str(x) for x in L_frac_plates]
+    L_total_plates_ind = transform_plates(L_total_plates) 
+    L_total_frac_ind = transform_plates(L_frac_plates)
     
-    for i in L_frac_plates:
-        print(type(i))
-    
-
     # make df of all cols and plate index
-    df = pd.DataFrame(zip(L_frac_group, L_frac_unit, L_frac_plates, L_frac_mols, L_frac_drivers, L_frac_discrepancies, L_frac_notes))
+    data = pd.DataFrame(zip(L_frac_group, L_frac_unit, L_frac_plates, L_total_frac_ind, L_frac_mols, L_frac_drivers, L_frac_discrepancies, L_frac_notes))
+    print(data)
+    print(data.describe())
     
     # filter df by L_tm_plate_ind (to match for omnicomm)
     # Match if frac items are not in Omnicomm (see accountance algo)
