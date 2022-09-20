@@ -52,9 +52,7 @@ def main():
     L_frac_discrepancies = dataFrac(5, 7)
     L_frac_notes = dataFrac(5, 8)
     
-    wb_total.Close(True)
-    wb_frac.Close(True)
-    xl.Quit()
+    
     
     # Turn plates into 123abc type
     def transform_plates(plates):
@@ -62,24 +60,81 @@ def main():
         
         for i in L_regions:
             plates = [x.removesuffix(str(i)).strip() if x != None and len(x) > 7 else x for x in plates]
-        plates_numeric = [''.join(re.findall(r'\d+', x)).lower() for x in plates if x != None]
-        plates_literal = [''.join(re.findall(r'\D', x)).lower() for x in plates if x != None]
+        plates_numeric = [''.join(re.findall(r'\d+', x)).lower() if x != None else None for x in plates ]
+        plates_literal = [''.join(re.findall(r'\D', x)).lower() if x != None else None for x in plates]
         plates = [str(x) + str(y) for x, y in zip(plates_numeric, plates_literal)]
-        plates = [''.join(re.sub(r'\s+', '', x)).lower() for x in plates if x != None]
+        plates = [''.join(re.sub(r'\s+', '', x)).lower() if x != None else None for x in plates]
 
         return plates
     
     L_frac_plates = [str(x) for x in L_frac_plates]
     L_total_plates_ind = transform_plates(L_total_plates) 
     L_total_frac_ind = transform_plates(L_frac_plates)
-    
-    # make df of all cols and plate index
-    data = pd.DataFrame(zip(L_frac_group, L_frac_unit, L_frac_plates, L_total_frac_ind, L_frac_mols, L_frac_drivers, L_frac_discrepancies, L_frac_notes))
-    print(data)
-    print(data.describe())
-    
-    # filter df by L_tm_plate_ind (to match for omnicomm)
-    # Match if frac items are not in Omnicomm (see accountance algo)
 
+    # Matching multiple columns via dict
+    def dict_matcher(x):
+        L = []
+        D = dict(zip(L_total_frac_ind, x))
+        for i in L_total_plates_ind:
+            L.append(D.get(i))
+        return L
+    
+    L_group_matched = dict_matcher(L_frac_group)
+    L_unit_matched = dict_matcher(L_frac_unit)    
+    L_plates_matched = dict_matcher(L_frac_plates)    
+    L_mols_matched = dict_matcher(L_frac_mols)    
+    L_drivers_matched = dict_matcher(L_frac_drivers)    
+    L_discrepancies_matched = dict_matcher(L_frac_discrepancies)    
+    L_notes_matched = dict_matcher(L_frac_notes)    
+    
+    # def post_to_xls(L, col):
+    #     row = 2
+    #     for i in L:
+    #         ws_total.Cells(row, col).Value = i    
+    #         row += 1
+    
+    # L_category = [L_group_matched, L_unit_matched, L_plates_matched, L_mols_matched, L_drivers_matched, L_discrepancies_matched, L_notes_matched]
+    # L_col = [8, 9, 10, 12, 13, 14, 15]
+
+    # for i, j in zip(L_category, L_col):
+    #     post_it = post_to_xls(i, j)
+    
+    
+
+    # data = pd.DataFrame(zip(L_group_matched, L_unit_matched, L_plates_matched, L_mols_matched, L_drivers_matched, L_discrepancies_matched, L_notes_matched))
+
+    
+    # Match if frac items are not in Omnicomm (see accountance algo)
+    def dict_unmatcher(x):
+        L = []
+        D = dict(zip(L_total_frac_ind, x))
+        for i in L_total_frac_ind:
+            if i not in L_total_plates_ind:
+                L.append(D.get(i))
+        return L
+    
+    L_group_unmatched = dict_unmatcher(L_frac_group)
+    L_unit_unmatched = dict_unmatcher(L_frac_unit)    
+    L_plates_unmatched = dict_unmatcher(L_frac_plates)    
+    L_mols_unmatched = dict_unmatcher(L_frac_mols)    
+    L_drivers_unmatched = dict_unmatcher(L_frac_drivers)    
+    L_discrepancies_unmatched = dict_unmatcher(L_frac_discrepancies)    
+    L_notes_unmatched = dict_unmatcher(L_frac_notes)
+
+    def post_to_xls2(L, col):
+        row = 309
+        for i in L:
+            ws_total.Cells(row, col).Value = i    
+            row += 1
+    
+    L_category = [L_group_unmatched, L_unit_unmatched, L_plates_unmatched, L_mols_unmatched, L_drivers_unmatched, L_discrepancies_unmatched, L_notes_unmatched]
+    L_col = [8, 9, 10, 12, 13, 14, 15]
+
+    for i, j in zip(L_category, L_col):
+        post_it = post_to_xls2(i, j)
+    
+    wb_total.Close(True)
+    wb_frac.Close(True)
+    xl.Quit()
 if __name__ == '__main__':
     main()
